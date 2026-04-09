@@ -32,12 +32,14 @@ class DatabaseService:
 
         result = await self.db.users.insert_one(user_dict)
         user_dict["id"] = str(result.inserted_id)
+        user_dict.pop("hashed_password", None)
         return User(**user_dict)
 
-    async def get_user_by_email(self, email: str) -> Optional[User]:
+    async def get_user_by_email(self, email: str) -> Optional[UserInDB]:
         user_dict = await self.db.users.find_one({"email": email})
         if user_dict:
-            return User(**user_dict)
+            user_dict["id"] = str(user_dict["_id"])
+            return UserInDB(**user_dict)
         return None
 
     async def get_user_by_id(self, user_id: str) -> Optional[User]:
@@ -45,6 +47,7 @@ class DatabaseService:
         user_dict = await self.db.users.find_one({"_id": ObjectId(user_id)})
         if user_dict:
             user_dict["id"] = str(user_dict["_id"])
+            user_dict.pop("hashed_password", None)
             return User(**user_dict)
         return None
 
@@ -52,6 +55,7 @@ class DatabaseService:
         officers = []
         async for user_dict in self.db.users.find({"role": "officer"}):
             user_dict["id"] = str(user_dict["_id"])
+            user_dict.pop("hashed_password", None)
             officers.append(User(**user_dict))
         return officers
 

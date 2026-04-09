@@ -10,7 +10,7 @@ SECRET_KEY = "your-secret-key-change-in-production"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
@@ -34,7 +34,8 @@ async def authenticate_user(db: AsyncIOMotorDatabase, email: str, password: str)
         return False
     if not verify_password(password, user["hashed_password"]):
         return False
-    return User(**user)
+    user["id"] = str(user["_id"])
+    return UserInDB(**user)
 
 async def get_current_user(token: str, db: AsyncIOMotorDatabase):
     credentials_exception = HTTPException(
