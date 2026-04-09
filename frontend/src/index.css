@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles for the complaint management system */
+.priority-high {
+  @apply bg-red-100 text-red-800;
+}
+
+.priority-medium {
+  @apply bg-yellow-100 text-yellow-800;
+}
+
+.priority-low {
+  @apply bg-blue-100 text-blue-800;
+}
+
+.status-pending {
+  @apply bg-gray-100 text-gray-800;
+}
+
+.status-in_progress {
+  @apply bg-orange-100 text-orange-800;
+}
+
+.status-resolved {
+  @apply bg-green-100 text-green-800;
+}
