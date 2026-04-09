@@ -27,7 +27,12 @@ const Login = () => {
     const result = await login(formData.email, formData.password);
 
     if (result.success) {
-      navigate('/dashboard');
+      const redirectPath = result.role === 'admin'
+        ? '/admin-dashboard'
+        : result.role === 'officer'
+          ? '/officer-dashboard'
+          : '/dashboard';
+      navigate(redirectPath);
     } else {
       setError(result.error);
     }

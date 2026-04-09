@@ -3,6 +3,16 @@ import axios from 'axios';
 
 const AuthContext = createContext();
 
+const parseJwt = (token) => {
+  try {
+    const payload = token.split('.')[1];
+    const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+    return JSON.parse(decoded);
+  } catch {
+    return null;
+  }
+};
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -18,10 +28,9 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      // Verify token and set user
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      // In a real app, you'd validate the token with the server
-      setUser({ token });
+      const payload = parseJwt(token);
+      setUser({ token, role: payload?.role || 'citizen' });
     }
     setLoading(false);
   }, []);
@@ -35,8 +44,10 @@ export const AuthProvider = ({ children }) => {
       const { access_token } = response.data;
       localStorage.setItem('token', access_token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
-      setUser({ token: access_token });
-      return { success: true };
+      const payload = parseJwt(access_token);
+      const role = payload?.role || 'citizen';
+      setUser({ token: access_token, role });
+      return { success: true, role };
     } catch (error) {
       return { success: false, error: error.response?.data?.detail || 'Login failed' };
     }
@@ -58,10 +69,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const getUserRole = () => {
-    if (!user) return null;
-    // In a real app, you'd decode the JWT to get the role
-    // For now, we'll make a request to get user info
-    return 'citizen'; // placeholder
+    return user?.role || null;
   };
 
   const value = {
